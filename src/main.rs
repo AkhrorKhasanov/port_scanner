@@ -9,4 +9,6 @@ async fn main() {
     let args = cli::Args::parse();
 
     scanner::run_scanner(args).await;
+
+    print("QUYOSH KULAR JIZ JIZ");
 }
