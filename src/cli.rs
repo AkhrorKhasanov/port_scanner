@@ -1,5 +1,5 @@
 use clap::Parser;
-#[derive(Parser. Debug)]
+#[derive(Parser, Debug)]
 #[command(
     author = "Axror Hasanov. ahrorhasanov815@gmail.com",
     version = "1.0.0",
