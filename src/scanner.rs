@@ -33,7 +33,7 @@ pub async fn run_scanner(args: Args) {
                             let mut has_received_data = false;
 
                             if let Ok(Ok(n)) =
-                                timeout(Duration::from_secs(1), stream.read(&mut buffer)).await
+                                timeout(Duration::from_secs(args.timeout), stream.read(&mut buffer)).await
                             {
                                 if n > 0 {
                                     println!(
@@ -47,7 +47,7 @@ pub async fn run_scanner(args: Args) {
                             if !has_received_data {
                                 let _ = stream.write_all(b"HEAD / HTTP/1.0\r\n\r\n").await;
                                 if let Ok(Ok(n)) =
-                                    timeout(Duration::from_secs(1), stream.read(&mut buffer)).await
+                                    timeout(Duration::from_secs(args.timeout), stream.read(&mut buffer)).await
                                 {
                                     if n > 0 {
                                         println!(
@@ -57,16 +57,6 @@ pub async fn run_scanner(args: Args) {
                                     }
                                 }
                             }
-                            // if let Ok(n) =
-                            //     timeout(Duration::from_secs(2), stream.read(&mut buffer)).await
-                            // {
-                            //     if let Ok(bytes_read) = n {
-                            //         if bytes_read > 0 {
-                            //             let banner = String::from_utf8_lossy(&buffer[..bytes_read]);
-                            //             println!(" -> Data from {}: {}", port, banner.trim());
-                            //         }
-                            //     }
-                            // }
                         }
                     }
                 });
