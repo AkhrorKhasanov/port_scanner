@@ -18,6 +18,7 @@ Clone the repository:
 ```bash
 git clone https://github.com/AkhrorKhasanov/port_scanner.git
 cd port_scanner
+```
 
 Build the project:
 
