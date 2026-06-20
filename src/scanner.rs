@@ -1,7 +1,7 @@
 use crate::cli::Args;
 use crate::utils;
 use std::sync::Arc;
-use tokio::io::{AsyncReadExt};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::Semaphore;
 use tokio::time::{Duration, timeout};
@@ -27,17 +27,46 @@ pub async fn run_scanner(args: Args) {
                         if let Ok(mut stream) = stream {
                             println!("Port {} is OPEN", port);
 
+                            let _ = stream.write_all(b"HEAD / HTTP/1.0\r\n\r\n").await;
+
                             let mut buffer = [0; 1024];
-                            if let Ok(n) =
-                                timeout(Duration::from_secs(2), stream.read(&mut buffer)).await
+                            let mut has_received_data = false;
+
+                            if let Ok(Ok(n)) =
+                                timeout(Duration::from_secs(1), stream.read(&mut buffer)).await
                             {
-                                if let Ok(bytes_read) = n {
-                                    if bytes_read > 0 {
-                                        let banner = String::from_utf8_lossy(&buffer[..bytes_read]);
-                                        println!(" -> Data from {}: {}", port, banner.trim());
+                                if n > 0 {
+                                    println!(
+                                        "  -> Banner: {}",
+                                        String::from_utf8_lossy(&buffer[..n]).trim()
+                                    );
+                                    has_received_data = true;
+                                }
+                            }
+
+                            if !has_received_data {
+                                let _ = stream.write_all(b"HEAD / HTTP/1.0\r\n\r\n").await;
+                                if let Ok(Ok(n)) =
+                                    timeout(Duration::from_secs(1), stream.read(&mut buffer)).await
+                                {
+                                    if n > 0 {
+                                        println!(
+                                            "  -> HTTP Response: {}",
+                                            String::from_utf8_lossy(&buffer[..n]).trim()
+                                        );
                                     }
                                 }
                             }
+                            // if let Ok(n) =
+                            //     timeout(Duration::from_secs(2), stream.read(&mut buffer)).await
+                            // {
+                            //     if let Ok(bytes_read) = n {
+                            //         if bytes_read > 0 {
+                            //             let banner = String::from_utf8_lossy(&buffer[..bytes_read]);
+                            //             println!(" -> Data from {}: {}", port, banner.trim());
+                            //         }
+                            //     }
+                            // }
                         }
                     }
                 });
